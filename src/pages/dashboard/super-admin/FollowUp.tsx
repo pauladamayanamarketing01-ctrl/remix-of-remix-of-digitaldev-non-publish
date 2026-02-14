@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { RefreshCw, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 type OrderLead = {
   id: string;
@@ -63,7 +65,7 @@ function subscriptionAddOnsSummary(subs: Record<string, boolean> | null) {
   return entries.map(([k]) => k).join(", ");
 }
 
-function LeadTable({ leads, showDomain }: { leads: OrderLead[]; showDomain: boolean }) {
+function LeadTable({ leads, showDomain, onDelete }: { leads: OrderLead[]; showDomain: boolean; onDelete: (id: string) => void }) {
   if (leads.length === 0) {
     return <p className="text-sm text-muted-foreground py-4">Belum ada data.</p>;
   }
@@ -90,6 +92,7 @@ function LeadTable({ leads, showDomain }: { leads: OrderLead[]; showDomain: bool
             <th className="px-3 py-2 text-left font-medium text-foreground whitespace-nowrap">Kota</th>
             <th className="px-3 py-2 text-left font-medium text-foreground whitespace-nowrap">Total</th>
             <th className="px-3 py-2 text-left font-medium text-foreground whitespace-nowrap">Status</th>
+            <th className="px-3 py-2 text-center font-medium text-foreground whitespace-nowrap">Aksi</th>
           </tr>
         </thead>
         <tbody>
@@ -128,6 +131,29 @@ function LeadTable({ leads, showDomain }: { leads: OrderLead[]; showDomain: bool
                   {lead.status}
                 </Badge>
               </td>
+              <td className="px-3 py-2 text-center whitespace-nowrap">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Hapus data lead?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Data ini akan dihapus secara permanen dari database. Apakah Anda yakin?
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Tidak</AlertDialogCancel>
+                      <AlertDialogAction onClick={() => onDelete(lead.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                        Ya, Hapus
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </td>
             </tr>
           ))}
         </tbody>
@@ -139,6 +165,7 @@ function LeadTable({ leads, showDomain }: { leads: OrderLead[]; showDomain: bool
 export default function FollowUp() {
   const [loading, setLoading] = useState(false);
   const [leads, setLeads] = useState<OrderLead[]>([]);
+  const { toast } = useToast();
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -160,6 +187,18 @@ export default function FollowUp() {
   useEffect(() => {
     refresh();
   }, [refresh]);
+
+  const handleDelete = useCallback(async (id: string) => {
+    try {
+      const { error } = await (supabase as any).from("order_leads").delete().eq("id", id);
+      if (error) throw error;
+      setLeads((prev) => prev.filter((l) => l.id !== id));
+      toast({ title: "Data berhasil dihapus" });
+    } catch (e) {
+      console.error("Delete lead error:", e);
+      toast({ variant: "destructive", title: "Gagal menghapus data" });
+    }
+  }, [toast]);
 
   const websiteLeads = useMemo(() => leads.filter((l) => l.flow_type === "website"), [leads]);
   const marketingLeads = useMemo(() => leads.filter((l) => l.flow_type === "marketing"), [leads]);
@@ -199,7 +238,7 @@ export default function FollowUp() {
               <CardTitle className="text-base">Order Website</CardTitle>
             </CardHeader>
             <CardContent>
-              <LeadTable leads={websiteLeads} showDomain />
+              <LeadTable leads={websiteLeads} showDomain onDelete={handleDelete} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -210,7 +249,7 @@ export default function FollowUp() {
               <CardTitle className="text-base">Order Marketing</CardTitle>
             </CardHeader>
             <CardContent>
-              <LeadTable leads={marketingLeads} showDomain={false} />
+              <LeadTable leads={marketingLeads} showDomain={false} onDelete={handleDelete} />
             </CardContent>
           </Card>
         </TabsContent>

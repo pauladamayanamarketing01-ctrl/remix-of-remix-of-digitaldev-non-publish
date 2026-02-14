@@ -168,7 +168,7 @@ export default function Billing() {
     setPaying(true);
     try {
       await logOrderAudit();
-      await saveOrderLead(state, "marketing", totalAfterPromoIdr);
+      await saveOrderLead(state, "marketing", totalAfterPromoIdr, { skipDomainTemplate: true });
 
       const res = await createXenditInvoice({
         amount_idr: totalAfterPromoIdr,
