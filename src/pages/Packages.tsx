@@ -45,6 +45,8 @@ type PackageAddOnRow = {
   id: string;
   package_id: string;
   label: string;
+  price_per_unit: number;
+  unit: string;
   is_active: boolean;
   sort_order: number | null;
   created_at?: string | null;
@@ -152,7 +154,7 @@ export default function Packages() {
           .order("created_at", { ascending: true }),
         supabase
           .from("package_add_ons")
-          .select("id,package_id,label,is_active,sort_order,created_at,updated_at")
+          .select("id,package_id,label,price_per_unit,unit,is_active,sort_order,created_at,updated_at")
           .eq("is_active", true)
           .order("sort_order", { ascending: true })
           .order("created_at", { ascending: true }),
@@ -568,11 +570,20 @@ export default function Packages() {
                           <div className="mt-6 border-t border-border pt-5">
                             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Add-ons</p>
                             <ul className="mt-3 space-y-2">
-                              {pkg.addOns.map((a) => (
-                                <li key={a.id} className="text-sm text-foreground">
-                                  {a.label}
-                                </li>
-                              ))}
+                              {pkg.addOns.map((a) => {
+                                const price = Number(a.price_per_unit ?? 0);
+                                const unit = String(a.unit ?? "unit").trim();
+                                return (
+                                  <li key={a.id} className="flex items-start justify-between gap-2 text-sm">
+                                    <span className="text-foreground">{a.label}</span>
+                                    {price > 0 && (
+                                      <span className="shrink-0 text-muted-foreground whitespace-nowrap">
+                                        Rp {price.toLocaleString("id-ID", { maximumFractionDigits: 0 })}/{unit}
+                                      </span>
+                                    )}
+                                  </li>
+                                );
+                              })}
                             </ul>
                           </div>
                         )}

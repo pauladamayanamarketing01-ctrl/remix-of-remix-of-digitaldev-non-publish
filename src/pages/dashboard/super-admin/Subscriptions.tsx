@@ -504,12 +504,13 @@ export default function SuperAdminSubscriptions() {
   const isMonthlyBasePackageName = (name: string) => {
     const n = normalizePackageName(name);
 
-    // KHUSUS: hanya 2 menu ini yang berbasis /Bulan.
+    // KHUSUS: menu berbasis /Bulan.
     // Nama di DB bisa mengandung suffix seperti "/Bulan" atau variasi spasi.
     const isFdm = n.includes("full digital marketing");
     const isBlogSocmed = n.includes("blog + social media") || n.includes("blog+social media");
+    const isContentMarketing = n.includes("content marketing");
 
-    return isFdm || isBlogSocmed;
+    return isFdm || isBlogSocmed || isContentMarketing;
   };
 
   const isWebsiteOnlyYearlyPackageName = (name: string) => {
