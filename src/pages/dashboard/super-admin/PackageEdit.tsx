@@ -271,12 +271,15 @@ export default function SuperAdminPackageEdit() {
                       ...pkg,
                       features: e.target.value
                         .split("\n")
-                        .map((s) => s.trim())
-                        .filter(Boolean),
+                        .filter((s) => s.trim() !== ""),
                     })
                   }
-                  rows={8}
+                  rows={12}
+                  placeholder={"Blog Content (SEO-Optimized):\n- 4 artikel blog SEO / bulan\n- Keyword research per artikel\n\nSocial Media Management:\n- 8 post feed / bulan\n- Caption & copywriting"}
                 />
+                <p className="text-xs text-muted-foreground">
+                  Baris dengan awalan <code className="bg-muted px-1 rounded">-</code> ditampilkan dengan ✓ centang. Baris tanpa awalan menjadi judul section.
+                </p>
               </div>
 
 

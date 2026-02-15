@@ -540,13 +540,28 @@ export default function Packages() {
                       </CardHeader>
                       <CardContent className="flex-1">
                         {pkg.description && <p className="text-sm text-muted-foreground text-center mb-6">{pkg.description}</p>}
-                        <ul className="space-y-3">
-                          {features.map((f: any, j: number) => (
-                            <li key={j} className="flex items-start gap-3 text-sm">
-                              <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-                              <span className="text-foreground">{String(f)}</span>
-                            </li>
-                          ))}
+                        <ul className="space-y-2">
+                          {features.map((f: any, j: number) => {
+                            const text = String(f).trim();
+                            if (!text) return null;
+                            const isBullet = text.startsWith("- ") || text.startsWith("• ");
+                            const displayText = isBullet ? text.replace(/^[-•]\s*/, "") : text;
+
+                            if (isBullet) {
+                              return (
+                                <li key={j} className="flex items-start gap-3 text-sm">
+                                  <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                                  <span className="text-foreground">{displayText}</span>
+                                </li>
+                              );
+                            }
+
+                            return (
+                              <li key={j} className={`text-sm font-semibold text-foreground${j > 0 ? " mt-4" : ""}`}>
+                                {displayText}
+                              </li>
+                            );
+                          })}
                         </ul>
 
                         {pkg.addOns.length > 0 && (
