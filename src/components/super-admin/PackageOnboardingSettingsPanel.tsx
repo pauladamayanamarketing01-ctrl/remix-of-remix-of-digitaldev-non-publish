@@ -235,7 +235,7 @@ export default function PackageOnboardingSettingsPanel({ packageId }: { packageI
                         .replace(/\s+/g, " ")
                         .trim();
                       const isMarketingMonthly =
-                        n.includes("full digital marketing") || n.includes("blog + social media") || n.includes("blog+social media");
+                        n.includes("full digital marketing") || n.includes("blog + social media") || n.includes("blog+social media") || n.includes("content marketing");
 
                       return (
                         <h3
@@ -283,7 +283,7 @@ export default function PackageOnboardingSettingsPanel({ packageId }: { packageI
                         .toLowerCase()
                         .replace(/\s+/g, " ")
                         .trim();
-                      const isMarketingMonthly = n.includes("full digital marketing") || n.includes("blog + social media") || n.includes("blog+social media");
+                      const isMarketingMonthly = n.includes("full digital marketing") || n.includes("blog + social media") || n.includes("blog+social media") || n.includes("content marketing");
                       if (!isMarketingMonthly) return null;
 
                       return (
