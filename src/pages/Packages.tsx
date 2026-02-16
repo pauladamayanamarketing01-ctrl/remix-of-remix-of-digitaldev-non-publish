@@ -262,8 +262,8 @@ export default function Packages() {
           for (const p of withAddOns) {
             const n = String(p.name ?? "").trim().toLowerCase();
             const t = String(p.type ?? "").trim().toLowerCase();
-            const isMarketing3y = n === "growth" || t === "growth" || n === "pro" || t === "pro";
-            pkgYearsWanted[String(p.id)] = isMarketing3y ? 3 : 1;
+                            // Growth/Pro: use max discount from package_durations (not a fixed year)
+                            pkgYearsWanted[String(p.id)] = 1; // fallback only for non-marketing
           }
 
           const keys = pkgIds.map((id) => `order_subscription_plans:${id}`);
@@ -458,19 +458,20 @@ export default function Packages() {
                             // Growth & Pro packages are monthly-based in Duration Plan.
                             const isMonthlyBase = isCheckoutPlan;
 
+                            // For Growth/Pro (monthly-based): always use packages.price + max discount from durations
+                            const maxDiscFromDurations = durationDiscountByPackageId[String(pkg.id)] ?? 0;
                             const planMetaFromSettings = durationPlanYear1ByPackageId[String(pkg.id)];
                             const planMeta =
-                              planMetaFromSettings ??
-                              (isMonthlyBase
+                              isMonthlyBase
                                 ? {
-                                    years: isGrowth || isPro ? 3 : 1,
+                                    years: 1,
                                     basePriceIdr: Number(pkg.price ?? 0),
-                                    discountPercent: Number(durationDiscountByPackageId[String(pkg.id)] ?? 0),
+                                    discountPercent: maxDiscFromDurations,
                                     manualOverride: false,
                                     overridePriceIdr: null,
                                     finalPriceIdr: null,
                                   }
-                                : undefined);
+                                : planMetaFromSettings ?? undefined;
 
                             const baseFromPlan = Number(planMeta?.basePriceIdr ?? NaN);
                             const baseFallback = Number(pkg.price ?? 0);
@@ -508,12 +509,10 @@ export default function Packages() {
                             // with the normal monthly price struck through.
                             const headlineDisplay = discountedDisplay;
 
-                            const suffix = isMonthlyBase ? "/bulan" : isGrowth && years === 3 ? "/ 3 tahun" : "/ tahun";
+                            const suffix = isMonthlyBase ? "/bulan" : "/ tahun";
                             const afterLabel = isMonthlyBase
                               ? "Harga setelah diskon / bulan"
-                              : isGrowth && years === 3
-                                ? "Harga / 3 tahun setelah diskon"
-                                : "Harga / tahun setelah diskon";
+                              : "Harga / tahun setelah diskon";
 
                             const normalLabel = isMonthlyBase
                               ? `Harga Normal / Bulan: ${normalDisplay.toLocaleString("id-ID", { maximumFractionDigits: 0 })}`

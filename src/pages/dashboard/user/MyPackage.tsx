@@ -768,26 +768,54 @@ export default function MyPackage() {
                   <p className="font-medium text-foreground">What’s included:</p>
                   {/* Mobile: show full list (page can scroll) */}
                   <ul className="space-y-2 lg:hidden">
-                    {activePackage.packages.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2 min-w-0">
-                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
-                          <Check className="h-3 w-3 text-primary" />
-                        </div>
-                        <span className="text-sm text-foreground break-words whitespace-normal">{feature}</span>
-                      </li>
-                    ))}
+                    {activePackage.packages.features.map((feature, index) => {
+                      const text = String(feature ?? "").trim();
+                      if (!text) return null;
+                      const isBullet = text.startsWith("- ") || text.startsWith("• ");
+                      const displayText = isBullet ? text.replace(/^[-•]\s*/, "") : text;
+
+                      if (isBullet) {
+                        return (
+                          <li key={index} className="flex items-start gap-2 min-w-0">
+                            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
+                              <Check className="h-3 w-3 text-primary" />
+                            </div>
+                            <span className="text-sm text-foreground break-words whitespace-normal">{displayText}</span>
+                          </li>
+                        );
+                      }
+                      return (
+                        <li key={index} className={`text-sm font-semibold text-foreground${index > 0 ? " mt-4" : ""}`}>
+                          {displayText}
+                        </li>
+                      );
+                    })}
                   </ul>
 
                   {/* Desktop: show full list (no "+xx more…") */}
                   <ul className="hidden lg:block space-y-2">
-                    {activePackage.packages.features.map((feature, index) => (
-                      <li key={index} className="flex items-start gap-2 min-w-0">
-                        <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
-                          <Check className="h-3 w-3 text-primary" />
-                        </div>
-                        <span className="text-sm text-foreground break-words whitespace-normal">{feature}</span>
-                      </li>
-                    ))}
+                    {activePackage.packages.features.map((feature, index) => {
+                      const text = String(feature ?? "").trim();
+                      if (!text) return null;
+                      const isBullet = text.startsWith("- ") || text.startsWith("• ");
+                      const displayText = isBullet ? text.replace(/^[-•]\s*/, "") : text;
+
+                      if (isBullet) {
+                        return (
+                          <li key={index} className="flex items-start gap-2 min-w-0">
+                            <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
+                              <Check className="h-3 w-3 text-primary" />
+                            </div>
+                            <span className="text-sm text-foreground break-words whitespace-normal">{displayText}</span>
+                          </li>
+                        );
+                      }
+                      return (
+                        <li key={index} className={`text-sm font-semibold text-foreground${index > 0 ? " mt-4" : ""}`}>
+                          {displayText}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
 
@@ -1139,26 +1167,54 @@ export default function MyPackage() {
                         <p className="text-sm font-medium text-foreground">What you’ll get</p>
                         {/* Mobile: full list */}
                         <ul className="mt-3 space-y-2 lg:hidden">
-                          {pkg.features.map((feature, index) => (
-                            <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground min-w-0">
-                              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
-                                <Check className="h-3 w-3 text-primary" />
-                              </div>
-                              <span className="break-words whitespace-normal">{feature}</span>
-                            </li>
-                          ))}
+                          {pkg.features.map((feature, index) => {
+                            const text = String(feature ?? "").trim();
+                            if (!text) return null;
+                            const isBullet = text.startsWith("- ") || text.startsWith("• ");
+                            const displayText = isBullet ? text.replace(/^[-•]\s*/, "") : text;
+
+                            if (isBullet) {
+                              return (
+                                <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground min-w-0">
+                                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
+                                    <Check className="h-3 w-3 text-primary" />
+                                  </div>
+                                  <span className="break-words whitespace-normal">{displayText}</span>
+                                </li>
+                              );
+                            }
+                            return (
+                              <li key={index} className={`text-sm font-semibold text-foreground${index > 0 ? " mt-4" : ""}`}>
+                                {displayText}
+                              </li>
+                            );
+                          })}
                         </ul>
 
                         {/* Desktop: full list (no "+xx more…") */}
                         <ul className="hidden lg:block mt-3 space-y-2">
-                          {pkg.features.map((feature, index) => (
-                            <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground min-w-0">
-                              <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
-                                <Check className="h-3 w-3 text-primary" />
-                              </div>
-                              <span className="break-words whitespace-normal">{feature}</span>
-                            </li>
-                          ))}
+                          {pkg.features.map((feature, index) => {
+                            const text = String(feature ?? "").trim();
+                            if (!text) return null;
+                            const isBullet = text.startsWith("- ") || text.startsWith("• ");
+                            const displayText = isBullet ? text.replace(/^[-•]\s*/, "") : text;
+
+                            if (isBullet) {
+                              return (
+                                <li key={index} className="flex items-start gap-2 text-sm text-muted-foreground min-w-0">
+                                  <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
+                                    <Check className="h-3 w-3 text-primary" />
+                                  </div>
+                                  <span className="break-words whitespace-normal">{displayText}</span>
+                                </li>
+                              );
+                            }
+                            return (
+                              <li key={index} className={`text-sm font-semibold text-foreground${index > 0 ? " mt-4" : ""}`}>
+                                {displayText}
+                              </li>
+                            );
+                          })}
                         </ul>
                       </div>
 

@@ -43,18 +43,38 @@ export default function Subscribe() {
         if (Number.isFinite(months) && months > 0) discountByMonths.set(months, discount);
       }
 
-      return [1, 2, 3].map((years) => {
-        const months = years * 12;
-        const discountPercent = discountByMonths.get(months) ?? 0;
+      // Build options from active duration rows instead of hardcoded 1/2/3
+      const activeEntries = Array.from(discountByMonths.entries())
+        .filter(([months]) => months > 0)
+        .sort(([a], [b]) => a - b);
+
+      if (activeEntries.length === 0) {
+        // Fallback: 1/2/3 years if no duration data
+        return [1, 2, 3].map((years) => ({
+          years,
+          months: years * 12,
+          discountPercent: 0,
+          label: `Durasi ${years} Tahun`,
+          priceIdr: computeDiscountedTotal({ monthlyPrice: monthlyBase, months: years * 12, discountPercent: 0 }),
+          isActive: true,
+          sortOrder: years,
+        }));
+      }
+
+      return activeEntries.map(([months, discountPercent]) => {
+        const years = months / 12;
         const priceIdr = computeDiscountedTotal({ monthlyPrice: monthlyBase, months, discountPercent });
+        const label = months % 12 === 0
+          ? `Durasi ${months / 12} Tahun`
+          : `Durasi ${months} Bulan`;
         return {
           years,
           months,
           discountPercent,
-          label: `Durasi ${years} Tahun`,
+          label,
           priceIdr,
           isActive: true,
-          sortOrder: years,
+          sortOrder: months,
         };
       });
     }
