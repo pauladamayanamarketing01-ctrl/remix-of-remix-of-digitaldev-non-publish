@@ -18,6 +18,7 @@ import { usePackageDurations } from "@/hooks/usePackageDurations";
 import { computeDiscountedTotal } from "@/lib/packageDurations";
 import { createXenditInvoice } from "@/lib/orderPayments";
 import { saveOrderLead } from "@/lib/saveOrderLead";
+import { saveOrderMarketing } from "@/lib/saveOrderMarketing";
 import { supabase } from "@/integrations/supabase/client";
 
 function formatIdr(value: number) {
@@ -169,6 +170,13 @@ export default function Billing() {
     try {
       await logOrderAudit();
       await saveOrderLead(state, "marketing", totalAfterPromoIdr, { skipDomainTemplate: true });
+
+      // Save billing step (ordered_at + amount) to order_marketing
+      await saveOrderMarketing(state.orderMarketingId, {
+        step: "billing",
+        amountIdr: totalAfterPromoIdr,
+        promoCode: state.promoCode,
+      });
 
       const res = await createXenditInvoice({
         amount_idr: totalAfterPromoIdr,

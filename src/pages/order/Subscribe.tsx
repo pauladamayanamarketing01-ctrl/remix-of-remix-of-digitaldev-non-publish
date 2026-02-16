@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useOrder } from "@/contexts/OrderContext";
 import { useOrderPublicSettings } from "@/hooks/useOrderPublicSettings";
 import { computeDiscountedTotal } from "@/lib/packageDurations";
+import { saveOrderMarketing } from "@/lib/saveOrderMarketing";
 
 function formatIdr(value: number) {
   return `Rp ${Math.round(value).toLocaleString("id-ID", { maximumFractionDigits: 0 })}`;
@@ -185,7 +186,23 @@ export default function Subscribe() {
           <Button type="button" variant="outline" onClick={() => navigate("/order/checkout")}>
             Kembali
           </Button>
-          <Button type="button" size="lg" disabled={!selected} onClick={() => navigate("/order/billing")}>
+          <Button
+            type="button"
+            size="lg"
+            disabled={!selected}
+            onClick={async () => {
+              // Save subscribe step to order_marketing
+              const months = selected ? selected * 12 : 0;
+              await saveOrderMarketing(state.orderMarketingId, {
+                step: "subscribe",
+                subscriptionYears: selected ?? 0,
+                durationMonths: months,
+                addOns: state.addOns ?? {},
+                subscriptionAddOns: state.subscriptionAddOns ?? {},
+              });
+              navigate("/order/billing");
+            }}
+          >
             Lanjut
           </Button>
         </div>
