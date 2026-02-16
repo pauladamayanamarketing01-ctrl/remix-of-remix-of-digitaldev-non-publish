@@ -222,13 +222,28 @@ export default function PackageCard({
       <CardContent className="flex-1 space-y-4">
         {description && <p className="text-sm text-muted-foreground text-center mb-6">{description}</p>}
 
-        <ul className="space-y-3">
-          {features.map((feature, index) => (
-            <li key={index} className="flex items-start gap-3 text-sm">
-              <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
-              <span className="text-foreground">{feature}</span>
-            </li>
-          ))}
+        <ul className="space-y-2">
+          {features.map((feature, index) => {
+            const text = String(feature ?? "").trim();
+            if (!text) return null;
+            const isBullet = text.startsWith("- ") || text.startsWith("• ");
+            const displayText = isBullet ? text.replace(/^[-•]\s*/, "") : text;
+
+            if (isBullet) {
+              return (
+                <li key={index} className="flex items-start gap-3 text-sm">
+                  <Check className="h-4 w-4 text-accent mt-0.5 flex-shrink-0" />
+                  <span className="text-foreground">{displayText}</span>
+                </li>
+              );
+            }
+
+            return (
+              <li key={index} className={`text-sm font-semibold text-foreground${index > 0 ? " mt-4" : ""}`}>
+                {displayText}
+              </li>
+            );
+          })}
         </ul>
 
         {!hideAddOns && addOns.length > 0 && (

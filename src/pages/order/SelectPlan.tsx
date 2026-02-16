@@ -217,14 +217,29 @@ export default function SelectPlan() {
                         <div className="mt-5">
                           <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Features</p>
                           <ul className="mt-3 space-y-2">
-                            {features.map((f, idx) => (
-                              <li key={idx} className="flex items-start gap-3 text-sm">
-                                <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
-                                  <Check className="h-3.5 w-3.5 text-accent" />
-                                </span>
-                                <span className="text-foreground">{String(f)}</span>
-                              </li>
-                            ))}
+                            {features.map((f, idx) => {
+                              const text = String(f ?? "").trim();
+                              if (!text) return null;
+                              const isBullet = text.startsWith("- ") || text.startsWith("• ");
+                              const displayText = isBullet ? text.replace(/^[-•]\s*/, "") : text;
+
+                              if (isBullet) {
+                                return (
+                                  <li key={idx} className="flex items-start gap-3 text-sm">
+                                    <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted">
+                                      <Check className="h-3.5 w-3.5 text-accent" />
+                                    </span>
+                                    <span className="text-foreground">{displayText}</span>
+                                  </li>
+                                );
+                              }
+
+                              return (
+                                <li key={idx} className={`text-sm font-semibold text-foreground${idx > 0 ? " mt-4" : ""}`}>
+                                  {displayText}
+                                </li>
+                              );
+                            })}
                           </ul>
                         </div>
                       ) : null}

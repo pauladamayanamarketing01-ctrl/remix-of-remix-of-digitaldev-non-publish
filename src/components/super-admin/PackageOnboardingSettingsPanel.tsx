@@ -206,22 +206,37 @@ export default function PackageOnboardingSettingsPanel({ packageId }: { packageI
                   />
                 </div>
                 <div className="sm:col-span-7">
-                  <div className="text-xs text-muted-foreground">Otomatis dihitung di /order/subscribe: bulan × (12 × tahun) lalu diskon % (jika ada).</div>
+                  <div className="text-xs text-muted-foreground">Otomatis dihitung di /order/subscribe: bulan × durasi lalu diskon % (jika ada). Hanya durasi dengan toggle Active yang ditampilkan.</div>
                   <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                    {[1, 2, 3].map((years) => {
-                      const months = years * 12;
-                      const discountPercent = discountByMonths.get(months) ?? 0;
-                      const total = computeDiscountedTotal({ monthlyPrice: Number(pkg.price ?? 0), months, discountPercent });
-                      const perMonth = months > 0 ? Math.round(total / months) : 0;
-                      return (
-                        <div key={years} className="rounded-md border border-border bg-muted/20 px-3 py-2">
-                          <div className="text-xs text-muted-foreground">{years} tahun</div>
-                          <div className="text-sm font-semibold text-foreground">{formatIdr(total)}</div>
-                          <div className="text-[11px] text-muted-foreground">Diskon: {discountPercent}%</div>
-                          <div className="text-[11px] text-muted-foreground">≈ {formatIdr(perMonth)} / bulan</div>
-                        </div>
-                      );
-                    })}
+                    {(() => {
+                      // Show all active durations from the durations list
+                      const activeDurations = durations
+                        .filter((d) => d.is_active)
+                        .slice()
+                        .sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0) || a.duration_months - b.duration_months);
+
+                      if (activeDurations.length === 0) {
+                        return (
+                          <div className="col-span-3 text-xs text-muted-foreground">Belum ada durasi aktif.</div>
+                        );
+                      }
+
+                      return activeDurations.map((d) => {
+                        const months = d.duration_months;
+                        const discountPercent = d.discount_percent;
+                        const total = computeDiscountedTotal({ monthlyPrice: Number(pkg.price ?? 0), months, discountPercent });
+                        const perMonth = months > 0 ? Math.round(total / months) : 0;
+                        const label = months % 12 === 0 ? `${months / 12} tahun` : `${months} bulan`;
+                        return (
+                          <div key={months} className="rounded-md border border-border bg-muted/20 px-3 py-2">
+                            <div className="text-xs text-muted-foreground">{label}</div>
+                            <div className="text-sm font-semibold text-foreground">{formatIdr(total)}</div>
+                            <div className="text-[11px] text-muted-foreground">Diskon: {discountPercent}%</div>
+                            <div className="text-[11px] text-muted-foreground">≈ {formatIdr(perMonth)} / bulan</div>
+                          </div>
+                        );
+                      });
+                    })()}
                   </div>
                 </div>
               </div>
