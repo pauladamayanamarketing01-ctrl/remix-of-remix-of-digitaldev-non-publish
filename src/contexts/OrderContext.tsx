@@ -33,6 +33,8 @@ export type OrderState = {
     promoName: string;
     discountUsd: number;
   } | null;
+  /** Tracks the order_marketing row for Growth/Pro flow */
+  orderMarketingId: string | null;
 };
 
 type OrderContextValue = {
@@ -47,6 +49,7 @@ type OrderContextValue = {
   setDetails: (patch: Partial<OrderDetails>) => void;
   setPromoCode: (code: string) => void;
   setAppliedPromo: (promo: OrderState["appliedPromo"]) => void;
+  setOrderMarketingId: (id: string | null) => void;
   reset: () => void;
 };
 
@@ -74,6 +77,7 @@ const defaultState: OrderState = {
   },
   promoCode: "",
   appliedPromo: null,
+  orderMarketingId: null,
 };
 
 const OrderContext = createContext<OrderContextValue | null>(null);
@@ -144,6 +148,7 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
   const setDetails = useCallback((patch: Partial<OrderDetails>) => setState((s) => ({ ...s, details: { ...s.details, ...patch } })), []);
   const setPromoCode = useCallback((promoCode: string) => setState((s) => ({ ...s, promoCode })), []);
   const setAppliedPromo = useCallback((appliedPromo: OrderState["appliedPromo"]) => setState((s) => ({ ...s, appliedPromo })), []);
+  const setOrderMarketingId = useCallback((orderMarketingId: string | null) => setState((s) => ({ ...s, orderMarketingId })), []);
   const reset = useCallback(() => setState(defaultState), []);
 
   const value = useMemo<OrderContextValue>(() => {
@@ -159,9 +164,10 @@ export function OrderProvider({ children }: { children: React.ReactNode }) {
       setDetails,
       setPromoCode,
       setAppliedPromo,
+      setOrderMarketingId,
       reset,
     };
-  }, [reset, setAddOnQuantity, setAppliedPromo, setDetails, setDomain, setDomainStatus, setPackage, setPromoCode, setSubscriptionAddOnSelected, setSubscriptionYears, setTemplate, state]);
+  }, [reset, setAddOnQuantity, setAppliedPromo, setDetails, setDomain, setDomainStatus, setOrderMarketingId, setPackage, setPromoCode, setSubscriptionAddOnSelected, setSubscriptionYears, setTemplate, state]);
 
   return <OrderContext.Provider value={value}>{children}</OrderContext.Provider>;
 }

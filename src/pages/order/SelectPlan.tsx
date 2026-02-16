@@ -4,6 +4,7 @@ import { Check } from "lucide-react";
 
 import { supabase } from "@/integrations/supabase/client";
 import { useOrder } from "@/contexts/OrderContext";
+import { saveOrderMarketing } from "@/lib/saveOrderMarketing";
 
 import { OrderLayout } from "@/components/order/OrderLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,7 +44,7 @@ function formatIdr(value: number) {
 export default function SelectPlan() {
   const navigate = useNavigate();
   const query = useQuery();
-  const { state, setPackage } = useOrder();
+  const { state, setPackage, setOrderMarketingId } = useOrder();
 
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<PackageRow[]>([]);
@@ -257,7 +258,24 @@ export default function SelectPlan() {
           <Button type="button" variant="outline" asChild>
             <Link to="/packages">Kembali</Link>
           </Button>
-          <Button type="button" size="lg" disabled={!selectedId} onClick={() => navigate("/order/checkout")}>
+          <Button
+            type="button"
+            size="lg"
+            disabled={!selectedId}
+            onClick={async () => {
+              // Save select-plan step to order_marketing
+              const pkg = rows.find((r) => r.id === selectedId);
+              if (pkg) {
+                const rowId = await saveOrderMarketing(state.orderMarketingId, {
+                  step: "select-plan",
+                  packageId: pkg.id,
+                  packageName: pkg.name,
+                });
+                if (rowId) setOrderMarketingId(rowId);
+              }
+              navigate("/order/checkout");
+            }}
+          >
             Lanjut
           </Button>
         </div>

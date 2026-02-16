@@ -14,6 +14,7 @@ import { OrderLayout } from "@/components/order/OrderLayout";
 import { OrderSummaryCard } from "@/components/order/OrderSummaryCard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useOrder } from "@/contexts/OrderContext";
+import { saveOrderMarketing } from "@/lib/saveOrderMarketing";
 
 const schema = z.object({
   firstName: z.string().trim().min(1, "Nama depan wajib diisi").max(50),
@@ -176,10 +177,24 @@ export default function Checkout() {
           <Form {...form}>
             <form
               className="space-y-5"
-              onSubmit={form.handleSubmit((values) => {
+              onSubmit={form.handleSubmit(async (values) => {
                 const provinceName = provinces.find((p) => p.isoCode === values.provinceCode)?.name ?? "";
                 const fullName = `${values.firstName} ${values.lastName}`.trim();
                 setDetails({ ...values, name: fullName, provinceName });
+
+                // Save checkout step to order_marketing
+                await saveOrderMarketing(state.orderMarketingId, {
+                  step: "checkout",
+                  firstName: values.firstName,
+                  lastName: values.lastName,
+                  email: values.email,
+                  phone: values.phone,
+                  businessName: values.businessName || "",
+                  provinceCode: values.provinceCode,
+                  provinceName,
+                  city: values.city,
+                });
+
                 navigate("/order/subscribe");
               })}
             >
