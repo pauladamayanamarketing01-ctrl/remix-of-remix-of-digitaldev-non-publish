@@ -53,6 +53,15 @@ type PackageAddOnRow = {
   updated_at?: string | null;
 };
 
+type SubscriptionAddOnRow = {
+  id: string;
+  label: string;
+  description: string | null;
+  price_idr: number;
+  is_active: boolean;
+  sort_order: number;
+};
+
 type PackageDurationRow = {
   id?: string;
   package_id: string;
@@ -66,7 +75,10 @@ type PackageDurationRow = {
 
 type PublicPackageRow = PackageRow & { is_recommended?: boolean };
 
-type PublicPackageWithAddOns = PublicPackageRow & { addOns: PackageAddOnRow[] };
+type PublicPackageWithAddOns = PublicPackageRow & {
+  addOns: PackageAddOnRow[];
+  subscriptionAddOns: SubscriptionAddOnRow[];
+};
 
 const PUBLIC_PACKAGE_NAME_ORDER = [
   "starter",
@@ -138,7 +150,7 @@ export default function Packages() {
     try {
       const PACKAGES_START_URLS_FN = "packages-start-urls";
 
-      const [faqRes, pkgRes, addOnsRes, layoutRes, startUrlsRes, legacyDurationPlanRes] = await Promise.all([
+      const [faqRes, pkgRes, addOnsRes, layoutRes, startUrlsRes, legacyDurationPlanRes, subAddOnsRes] = await Promise.all([
         supabase
           .from("website_faqs")
           .select("id,page,question,answer,sort_order,is_published,created_at,updated_at")
@@ -162,6 +174,13 @@ export default function Packages() {
         supabase.functions.invoke<{ ok: boolean; value?: Record<string, string> }>(PACKAGES_START_URLS_FN, { body: {} }),
         // legacy global key (fallback only)
         (supabase as any).from("website_settings").select("value").eq("key", "order_subscription_plans").maybeSingle(),
+        // Fetch subscription add-ons for Website Only package
+        (supabase as any)
+          .from("subscription_add_ons")
+          .select("id,label,description,price_idr,is_active,sort_order")
+          .eq("package_id", WEBSITE_ONLY_YEARLY_PACKAGE_ID)
+          .or("is_active.eq.true,is_active.is.null")
+          .order("sort_order", { ascending: true }),
       ]);
 
       type DurationPlanMeta = {
@@ -230,6 +249,18 @@ export default function Packages() {
         }
       }
 
+      // Parse subscription add-ons for Website Only
+      const websiteOnlySubAddOns: SubscriptionAddOnRow[] = Array.isArray(subAddOnsRes?.data)
+        ? (subAddOnsRes.data as any[]).map((r: any) => ({
+            id: String(r.id),
+            label: String(r.label ?? ""),
+            description: r.description ?? null,
+            price_idr: Number(r.price_idr ?? 0),
+            is_active: r.is_active !== false,
+            sort_order: Number(r.sort_order ?? 0),
+          }))
+        : [];
+
       if (pkgRes.data) {
         const base = (pkgRes.data as PublicPackageRow[]).slice().sort(sortPackagesForPublic);
         const raw = layoutRes?.data?.value as any;
@@ -239,6 +270,7 @@ export default function Packages() {
         let withAddOns: PublicPackageWithAddOns[] = base.map((p) => ({
           ...p,
           addOns: addOnsByPackageId.get(String(p.id)) ?? [],
+          subscriptionAddOns: String(p.id) === WEBSITE_ONLY_YEARLY_PACKAGE_ID ? websiteOnlySubAddOns : [],
         }));
 
         if (order && order.length) {
@@ -366,6 +398,7 @@ export default function Packages() {
       { table: "package_durations" },
       { table: "packages" },
       { table: "package_add_ons" },
+      { table: "subscription_add_ons" },
     ],
     debounceMs: 500,
     onChange: fetchPublicPackagesData,
@@ -565,7 +598,30 @@ export default function Packages() {
                           })}
                         </ul>
 
-                        {pkg.addOns.length > 0 && (
+                        {/* Website Only: show subscription add-ons from Duration Packages admin */}
+                        {String(pkg.id) === WEBSITE_ONLY_YEARLY_PACKAGE_ID && pkg.subscriptionAddOns.length > 0 && (
+                          <div className="mt-6 border-t border-border pt-5">
+                            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Add-ons</p>
+                            <ul className="mt-3 space-y-2">
+                              {pkg.subscriptionAddOns.map((a) => {
+                                const price = Number(a.price_idr ?? 0);
+                                return (
+                                  <li key={a.id} className="flex items-start justify-between gap-2 text-sm">
+                                    <span className="text-foreground">{a.label}</span>
+                                    {price > 0 && (
+                                      <span className="shrink-0 text-muted-foreground whitespace-nowrap">
+                                        Rp {price.toLocaleString("id-ID", { maximumFractionDigits: 0 })}
+                                      </span>
+                                    )}
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </div>
+                        )}
+
+                        {/* Other packages: show package_add_ons as before */}
+                        {String(pkg.id) !== WEBSITE_ONLY_YEARLY_PACKAGE_ID && pkg.addOns.length > 0 && (
                           <div className="mt-6 border-t border-border pt-5">
                             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Add-ons</p>
                             <ul className="mt-3 space-y-2">
