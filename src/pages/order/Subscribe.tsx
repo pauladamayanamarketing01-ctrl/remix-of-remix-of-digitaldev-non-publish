@@ -22,7 +22,7 @@ function isMonthlyPackageName(name: string | null) {
     .replace(/\s+/g, " ")
     .trim();
   // Accept variants with suffix like "/bulan" or extra spaces.
-  return n.includes("full digital marketing") || n.includes("blog + social media") || n.includes("blog+social media");
+  return n.includes("full digital marketing") || n.includes("blog + social media") || n.includes("blog+social media") || n.includes("content marketing");
 }
 
 export default function Subscribe() {
